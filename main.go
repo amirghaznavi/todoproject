@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -22,10 +23,14 @@ type User struct {
 }
 
 type Todo struct {
-	ID       int    `json:"id"`
-	Username string `json:"username"`
-	Task     string `json:"task"`
-	Done     bool   `json:"done"`
+	ID        int        `json:"id"`
+	Username  string     `json:"username"`
+	Task      string     `json:"task"`
+	Done      bool       `json:"done"`
+	Deadline  string     `json:"deadline"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 }
 
 type turnstileVerifyResp struct {
@@ -187,7 +192,7 @@ func main() {
 
 	// ============= CRUD APIs =============
 
-	// List todos (for a user)
+	// List todos (for a user) — only items not deleted, like before
 	r.GET("/todos/:username", func(c *gin.Context) {
 		username := c.Param("username")
 		todos, err := loadTodos()
@@ -197,74 +202,175 @@ func main() {
 		}
 		userTodos := []Todo{}
 		for _, t := range todos {
-			if t.Username == username {
+			if t.Username == username && t.DeletedAt == nil {
 				userTodos = append(userTodos, t)
 			}
 		}
 		c.JSON(http.StatusOK, userTodos)
 	})
 
-	// Create todo
+	// create to-do
 	r.POST("/todos/:username", func(c *gin.Context) {
 		username := c.Param("username")
 		task := c.PostForm("task")
+		deadline := c.PostForm("deadline")
+
+		if task == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "task required"})
+			return
+		}
 
 		todos, _ := loadTodos()
 		newID := 1
 		if len(todos) > 0 {
 			newID = todos[len(todos)-1].ID + 1
 		}
-		newTodo := Todo{ID: newID, Username: username, Task: task, Done: false}
+
+		now := time.Now()
+		newTodo := Todo{
+			ID:        newID,
+			Username:  username,
+			Task:      task,
+			Deadline:  deadline,
+			Done:      false,
+			CreatedAt: now,
+			UpdatedAt: now,
+		}
+
 		todos = append(todos, newTodo)
 		saveTodos(todos)
 		c.JSON(http.StatusOK, newTodo)
 	})
 
-	// Update todo
-	r.PUT("/todos/:username/:id", func(c *gin.Context) {
+	// toggle Done/Undone (disabled for deleted items)
+	r.PUT("/todos/:username/:id/toggle", func(c *gin.Context) {
 		username := c.Param("username")
 		idStr := c.Param("id")
 		id, _ := strconv.Atoi(idStr)
 
 		todos, _ := loadTodos()
 		updated := false
+		var result *Todo
+
 		for i, t := range todos {
-			if t.ID == id && t.Username == username {
-				todos[i].Done = !t.Done // toggle done
+			if t.ID == id && t.Username == username && t.DeletedAt == nil {
+				todos[i].Done = !t.Done
+				todos[i].UpdatedAt = time.Now()
 				updated = true
+				result = &todos[i]
 				break
 			}
 		}
+
 		if updated {
 			saveTodos(todos)
-			c.JSON(http.StatusOK, gin.H{"status": "updated"})
+			c.JSON(http.StatusOK, gin.H{"status": "toggled", "todo": result})
 		} else {
 			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		}
 	})
 
-	// Delete todo
+	// undo Done OR Deleted (restores deleted item or clears done)
+	r.PUT("/todos/:username/:id/undo", func(c *gin.Context) {
+		username := c.Param("username")
+		idStr := c.Param("id")
+		id, _ := strconv.Atoi(idStr)
+
+		todos, _ := loadTodos()
+		updated := false
+		var result *Todo
+
+		for i, t := range todos {
+			if t.ID == id && t.Username == username {
+				if t.DeletedAt != nil {
+					// undo delete (soft-deleted -> active)
+					todos[i].DeletedAt = nil
+					todos[i].UpdatedAt = time.Now()
+					updated = true
+				} else if t.Done {
+					// undo done
+					todos[i].Done = false
+					todos[i].UpdatedAt = time.Now()
+					updated = true
+				}
+				result = &todos[i]
+				break
+			}
+		}
+
+		if updated {
+			saveTodos(todos)
+			c.JSON(http.StatusOK, gin.H{"status": "undone", "todo": result})
+		} else {
+			c.JSON(http.StatusNotFound, gin.H{"error": "cannot undo"})
+		}
+	})
+
+	// soft Delete (mark DeletedAt instead of removing from storage)
 	r.DELETE("/todos/:username/:id", func(c *gin.Context) {
 		username := c.Param("username")
 		idStr := c.Param("id")
 		id, _ := strconv.Atoi(idStr)
 
 		todos, _ := loadTodos()
-		newTodos := []Todo{}
 		found := false
-		for _, t := range todos {
-			if !(t.ID == id && t.Username == username) {
-				newTodos = append(newTodos, t)
-			} else {
+		now := time.Now()
+		var result *Todo
+
+		for i, t := range todos {
+			if t.ID == id && t.Username == username && t.DeletedAt == nil {
+				todos[i].DeletedAt = &now
+				todos[i].UpdatedAt = now
 				found = true
+				result = &todos[i]
+				break
 			}
 		}
+
 		if found {
-			saveTodos(newTodos)
-			c.JSON(http.StatusOK, gin.H{"status": "deleted"})
+			saveTodos(todos)
+			c.JSON(http.StatusOK, gin.H{"status": "deleted", "todo": result})
 		} else {
 			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		}
+	})
+
+	// patch (update deadline/task) — still blocked for deleted items
+	r.PATCH("/todos/:username/:id", func(c *gin.Context) {
+		username := c.Param("username")
+		id, _ := strconv.Atoi(c.Param("id"))
+		deadline := c.PostForm("deadline")
+		task := c.PostForm("task")
+
+		todos, _ := loadTodos()
+		now := time.Now()
+		changed := false
+		var result *Todo
+
+		for i := range todos {
+			if todos[i].ID == id && todos[i].Username == username && todos[i].DeletedAt == nil {
+				if deadline != "" {
+					todos[i].Deadline = deadline
+					changed = true
+				}
+				if task != "" {
+					todos[i].Task = task
+					changed = true
+				}
+				if changed {
+					todos[i].UpdatedAt = now
+					result = &todos[i]
+				}
+				break
+			}
+		}
+
+		if changed {
+			saveTodos(todos)
+			c.JSON(http.StatusOK, gin.H{"status": "patched", "todo": result})
+			return
+		}
+		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 	})
 
 	// ============= Registration =============

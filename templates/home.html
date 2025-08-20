@@ -1,81 +1,178 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Home - ToDo Project</title>
-  <link rel="stylesheet" href="/static/style.css"/>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      height: 100vh;
-      display: flex;
-    }
-    .left {
-      flex: 1;
-      background: linear-gradient(135deg, #4facfe, #00f2fe);
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      padding: 2rem;
-    }
-    .left h1 {
-      font-size: 2.5rem;
-    }
-    .right {
-      flex: 2;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #f9f9f9;
-    }
-    .home-box {
-      background: white;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 600px;
-      text-align: center;
-    }
-    .home-box h2 {
-      margin-bottom: 1rem;
-    }
-    .home-box p {
-      font-size: 1rem;
-      margin-bottom: 2rem;
-      color: #444;
-    }
-    .home-box a {
-      display: inline-block;
-      padding: 0.75rem 1.5rem;
-      background: #4facfe;
-      color: white;
-      text-decoration: none;
-      border-radius: 8px;
-      margin: 0.5rem;
-      transition: 0.3s;
-    }
-    .home-box a:hover {
-      background: #00c6ff;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 30px;
+        }
+        .task-card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .task-actions button {
+            margin-right: 5px;
+        }
+        .columns {
+            display: flex;
+            gap: 30px;
+        }
+        .column {
+            flex: 1;
+        }
+        .new-task {
+            margin-top: 20px;
+        }
+        .logout {
+            margin-top: 15px;
+            display: inline-block;
+        }
+    </style>
 </head>
 <body>
-  <div class="left">
-    <h1>Welcome!</h1>
-    <p>Your productivity dashboard</p>
-  </div>
-  <div class="right">
-    <div class="home-box">
-      <h2>Hello, User 👋</h2>
-      <p>What would you like to do today?</p>
-      <a href="/tasks">View My Tasks</a>
-      <a href="/logout">Logout</a>
+    <h1 class="mb-4">To-Do List</h1>
+
+    <div class="columns">
+        <!-- Pending Tasks -->
+        <div class="column">
+            <h4>Pending</h4>
+            <div class="task-card">
+                <strong>task 4</strong>
+                <p>created: 1/1/1, 3:25:44 AM</p>
+                <input type="datetime-local" class="form-control mb-2">
+                <button class="btn btn-primary mb-2">Save deadline</button>
+                <div class="task-actions">
+                    <button class="btn btn-success">Done</button>
+                    <button class="btn btn-danger">Delete</button>
+                </div>
+            </div>
+            <div class="task-card">
+                <strong>task 5</strong>
+                <p>created: 1/1/1, 3:25:44 AM</p>
+                <input type="datetime-local" class="form-control mb-2">
+                <button class="btn btn-primary mb-2">Save deadline</button>
+                <div class="task-actions">
+                    <button class="btn btn-success">Done</button>
+                    <button class="btn btn-danger">Delete</button>
+                </div>
+            </div>
+            <div class="task-card">
+                <strong>task 6</strong>
+                <p>created: 1/1/1, 3:25:44 AM</p>
+                <input type="datetime-local" class="form-control mb-2">
+                <button class="btn btn-primary mb-2">Save deadline</button>
+                <div class="task-actions">
+                    <button class="btn btn-success">Done</button>
+                    <button class="btn btn-danger">Delete</button>
+                </div>
+            </div>
+            <div class="new-task">
+                <input type="text" class="form-control mb-2" placeholder="New task...">
+                <input type="datetime-local" class="form-control mb-2">
+                <button class="btn btn-secondary">Add</button>
+            </div>
+        </div>
+
+        <!-- Done Tasks -->
+        <div class="column">
+            <h4>Done</h4>
+            <div class="task-card">
+                <strong>task 2</strong>
+                <p>created: 1/1/1, 3:25:44 AM</p>
+                <div class="task-actions">
+                    <button class="btn btn-success">Undo</button>
+                    <button class="btn btn-danger">Delete</button>
+                </div>
+            </div>
+            <div class="task-card">
+                <strong>task 3</strong>
+                <p>created: 1/1/1, 3:25:44 AM</p>
+                <div class="task-actions">
+                    <button class="btn btn-success">Undo</button>
+                    <button class="btn btn-danger">Delete</button>
+                </div>
+            </div>
+            <div class="task-card">
+                <strong>task 7</strong>
+                <p>created: 8/20/2025, 12:36:13 PM</p>
+                <div class="task-actions">
+                    <button class="btn btn-success">Undo</button>
+                    <button class="btn btn-danger">Delete</button>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
+
+    <a href="/logout" class="logout">Logout</a>
+
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+async function toggleTask(username, id) {
+    const res = await fetch(`/todos/${username}/${id}/toggle`, {
+        method: "PUT"
+    });
+    const data = await res.json();
+    console.log("toggle:", data);
+    loadTasks(username); // reload tasks after change
+}
+
+async function deleteTask(username, id) {
+    const res = await fetch(`/todos/${username}/${id}`, {
+        method: "DELETE"
+    });
+    const data = await res.json();
+    console.log("delete:", data);
+    loadTasks(username);
+}
+
+async function undoTask(username, id) {
+    const res = await fetch(`/todos/${username}/${id}/undo`, {
+        method: "PUT"
+    });
+    const data = await res.json();
+    console.log("undo:", data);
+    loadTasks(username);
+}
+
+async function patchTask(username, id, task, deadline) {
+    const formData = new FormData();
+    if (task) formData.append("task", task);
+    if (deadline) formData.append("deadline", deadline);
+
+    const res = await fetch(`/todos/${username}/${id}`, {
+        method: "PATCH",
+        body: formData
+    });
+    const data = await res.json();
+    console.log("patch:", data);
+    loadTasks(username);
+}
+
+async function loadTasks(username) {
+    const res = await fetch(`/todos/${username}`);
+    const tasks = await res.json();
+
+    // clear old list
+    document.getElementById("taskList").innerHTML = "";
+
+    tasks.forEach(t => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+            <span>${t.Task} (Deadline: ${t.Deadline || "none"}) ${t.Done ? "[Done]" : ""}</span>
+            <button onclick="toggleTask('${username}', ${t.ID})">Done</button>
+            <button onclick="deleteTask('${username}', ${t.ID})">Delete</button>
+            <button onclick="undoTask('${username}', ${t.ID})">Undo</button>
+        `;
+        document.getElementById("taskList").appendChild(li);
+    });
+}
+</script>
 </body>
 </html>
