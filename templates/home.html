@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Home - ToDo Project</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+    }
+    .left {
+      flex: 1;
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      padding: 2rem;
+    }
+    .left h1 {
+      font-size: 2.5rem;
+    }
+    .right {
+      flex: 2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f9f9f9;
+    }
+    .home-box {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+    }
+    .home-box h2 {
+      margin-bottom: 1rem;
+    }
+    .home-box p {
+      font-size: 1rem;
+      margin-bottom: 2rem;
+      color: #444;
+    }
+    .home-box a {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      background: #4facfe;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      margin: 0.5rem;
+      transition: 0.3s;
+    }
+    .home-box a:hover {
+      background: #00c6ff;
+    }
+  </style>
+</head>
+<body>
+  <div class="left">
+    <h1>Welcome!</h1>
+    <p>Your productivity dashboard</p>
+  </div>
+  <div class="right">
+    <div class="home-box">
+      <h2>Hello, User 👋</h2>
+      <p>What would you like to do today?</p>
+      <a href="/tasks">View My Tasks</a>
+      <a href="/logout">Logout</a>
+    </div>
+  </div>
+</body>
+</html>
